@@ -1401,14 +1401,14 @@ impl<'a> Processor<'a> {
                     gs.ctm = gs.ctm.pre_transform(&m);
                     dlog!("matrix {:?}", gs.ctm);
                 }
-                "CS" => {
-                    let name = operation.operands[0].as_name().unwrap();
-                    gs.stroke_colorspace = make_colorspace(doc, name, resources);
-                }
-                "cs" => {
-                    let name = operation.operands[0].as_name().unwrap();
-                    gs.fill_colorspace = make_colorspace(doc, name, resources);
-                }
+//                 "CS" => {
+//                     let name = operation.operands[0].as_name().unwrap();
+//                     gs.stroke_colorspace = make_colorspace(doc, name, resources);
+//                 }
+//                 "cs" => {
+//                     let name = operation.operands[0].as_name().unwrap();
+//                     gs.fill_colorspace = make_colorspace(doc, name, resources);
+//                 }
                 "SC" | "SCN" => {
                     gs.stroke_color = match gs.stroke_colorspace {
                         ColorSpace::Pattern => { dlog!("unhandled pattern color"); Vec::new() }
