@@ -2047,3 +2047,33 @@ pub fn output_doc(doc: &Document, output: &mut dyn OutputDev) -> Result<(), Outp
     }
     Ok(())
 }
+
+/// Parse a given document and output it to `output`
+pub fn output_doc_by_page_num(doc: &Document, page_num:u32, output: &mut dyn OutputDev) -> Result<(), OutputError> {
+    let empty_resources = &Dictionary::new();
+
+    let pages = doc.get_pages();
+    let mut p = Processor::new();
+    let dict = pages.get(page_num)?;
+    let page_num = dict.0;
+    let page_dict = doc.get_object(dict.1).unwrap().as_dict().unwrap();
+    dlog!("page {} {:?}", page_num, page_dict);
+    // XXX: Some pdfs lack a Resources directory
+    let resources = get_inherited(doc, page_dict, b"Resources").unwrap_or(empty_resources);
+    dlog!("resources {:?}", resources);
+
+    // pdfium searches up the page tree for MediaBoxes as needed
+    let media_box: Vec<f64> = get_inherited(doc, page_dict, b"MediaBox").expect("MediaBox");
+    let media_box = MediaBox { llx: media_box[0], lly: media_box[1], urx: media_box[2], ury: media_box[3] };
+
+    let art_box = get::<Option<Vec<f64>>>(&doc, page_dict, b"ArtBox")
+        .map(|x| (x[0], x[1], x[2], x[3]));
+
+    output.begin_page(page_num, &media_box, art_box)?;
+
+    p.process_stream(&doc, doc.get_page_content(dict.1).unwrap(), resources,&media_box, output, page_num)?;
+
+    output.end_page()?;
+    
+    Ok(())
+}
