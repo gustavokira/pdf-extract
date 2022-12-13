@@ -2054,9 +2054,8 @@ pub fn output_doc_by_page_num(doc: &Document, page_num:u32, output: &mut dyn Out
 
     let pages = doc.get_pages();
     let mut p = Processor::new();
-    let dict = pages.get(page_num)?;
-    let page_num = dict.0;
-    let page_dict = doc.get_object(dict.1).unwrap().as_dict().unwrap();
+    let idx = pages.get(&page_num).unwrap();
+    let page_dict = doc.get_object(*idx).unwrap().as_dict().unwrap();
     dlog!("page {} {:?}", page_num, page_dict);
     // XXX: Some pdfs lack a Resources directory
     let resources = get_inherited(doc, page_dict, b"Resources").unwrap_or(empty_resources);
@@ -2071,7 +2070,7 @@ pub fn output_doc_by_page_num(doc: &Document, page_num:u32, output: &mut dyn Out
 
     output.begin_page(page_num, &media_box, art_box)?;
 
-    p.process_stream(&doc, doc.get_page_content(dict.1).unwrap(), resources,&media_box, output, page_num)?;
+    p.process_stream(&doc, doc.get_page_content(*idx).unwrap(), resources,&media_box, output, page_num)?;
 
     output.end_page()?;
     
